@@ -16,7 +16,7 @@ git push 成功后，Claude 应开 background subagent 执行以下流程：
 ```yaml
 modules:
   module-name:
-    language: typescript|go|swift|python
+    language: typescript|go|swift|python|rust|java
     src_dir: "src/"
     test_command: "npx vitest run"
     unit_command: "npm run test:unit"
@@ -24,6 +24,7 @@ modules:
     lint_command: "npm run lint"
     typecheck_command: "npx tsc --noEmit"
     test_dir: "src/__tests__"
+    helper_dir: "src/__tests__/helpers"
 ```
 
 CI subagent 读取 config.yaml，对每个有改动的模块执行 lint_command → typecheck_command → unit_command。跨模块改动额外执行 cross_command。
