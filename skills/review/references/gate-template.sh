@@ -122,7 +122,7 @@ show_trend() {
     | while read -r count rule; do
       [[ "$count" =~ ^[0-9]+$ ]] || continue
       if [ "$count" -ge 10 ]; then
-        echo -e "  ${RED}$count${NC}  $rule  <- 高频，建议加入 CLAUDE.md 生成指导"
+        echo -e "  ${RED}$count${NC}  $rule  <- 高频，建议加入 test-governance/coding-guidelines.md"
       elif [ "$count" -ge 5 ]; then
         echo -e "  ${YELLOW}$count${NC}  $rule"
       else
@@ -150,7 +150,7 @@ show_trend() {
 
   echo -e "${CYAN}── /review 建议 ──${NC}"
   if [ -n "$top_rule" ] && [ "$top_count" -ge 5 ]; then
-    echo -e "  ${YELLOW}建议${NC}：规则 $top_rule 已触发 $top_count 次，考虑加入 CLAUDE.md 生成指导"
+    echo -e "  ${YELLOW}建议${NC}：规则 $top_rule 已触发 $top_count 次，考虑加入 test-governance/coding-guidelines.md"
   else
     echo "  当前无高频违规规则，门禁运转良好。"
   fi

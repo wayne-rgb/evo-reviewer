@@ -19,12 +19,15 @@ $ARGUMENTS — 可选：
 
 ## 前置：模块枚举 + 就绪检查
 
-### 0. Bootstrap（首次运行自动初始化）
-如果项目没有 `test-governance/` 目录，自动创建：
-- `test-governance/config.yaml` — 扫描项目生成模块配置（语言、测试命令、helper 路径）
-- `test-governance/infrastructure.md` — 空的基础设施注册表模板
-- `test-governance/coding-guidelines.md` — 空的编码规范模板
-- `test-governance/dimension-coverage.yaml` — 空的维度映射
+### Bootstrap（首次运行自动初始化）
+
+如果项目没有 `test-governance/` 目录，按以下步骤初始化：
+
+1. 创建 test-governance/ 目录及核心文件：
+   - `test-governance/config.yaml` — 扫描项目生成模块配置（语言、测试命令、helper 路径）
+   - `test-governance/infrastructure.md` — 空的基础设施注册表模板
+   - `test-governance/coding-guidelines.md` — 空的编码规范模板
+   - `test-governance/dimension-coverage.yaml` — 空的维度映射
 
 config.yaml 格式：
 ```yaml
@@ -32,28 +35,94 @@ config.yaml 格式：
 modules:
   module-name:
     language: typescript|go|swift|python|rust|java
+    src_dir: "src/"
     test_command: "npx vitest run"
+    unit_command: "npm run test:unit"
+    cross_command: "npm run test:cross"
+    lint_command: "npm run lint"
+    typecheck_command: "npx tsc --noEmit"
     test_dir: "src/__tests__"
     helper_dir: "src/__tests__/helpers"
 ```
 
-如果项目没有 `scripts/test-governance-gate.sh`，按 references/gate-template.sh 生成。
+2. 如果项目没有 `scripts/test-governance-gate.sh`，按 references/gate-template.sh 生成。
 
-Bootstrap 追加步骤（在创建 test-governance/ 和 gate.sh 之后）：
-
-4. 追加测试原则到项目 CLAUDE.md：
+3. 追加测试原则到项目 CLAUDE.md：
    - 读取 references/testing-strategy.md，追加到项目 CLAUDE.md（如果尚未包含"测试运行策略"章节）
    - 读取 references/dimensions.md 中的维度定义和适用性表，追加到项目 CLAUDE.md（如果尚未包含"测试编写的 6 个维度"章节）
    - 追加 CI 策略说明
 
-5. 配置 post-push CI hook：
-   - 如果项目 .claude/settings.json 中没有 post-push hook 配置，自动添加
+4. 配置 post-push CI hook：
+   - 先检查项目 .claude/settings.json 中是否已有功能等价的 post-push hook（检查现有 hook 命令中是否包含 "git push" 和 "subagent" 关键词），如果有则跳过创建，避免重复触发
+   - 如果没有等价 hook，在 .claude/settings.json 中添加 post-push hook 配置
    - 创建 .claude/hooks/post-push-signal.sh（从 evo-review 的 hooks/ 复制）
+
+5. 检查 .gitignore 是否包含 `test-governance/gate-violations.log`，如果没有则追加，避免违规日志被提交到版本控制。
 
 Bootstrap 产物纳入确认清单，和 review 发现一起确认。
 
+### test-governance 文件填充策略
+
+bootstrap 创建的文件初始为空模板，由 /review 的 Phase B 逐步填充。以下是每个文件的结构和填充规则：
+
+#### infrastructure.md（测试基础设施注册表）
+
+结构：按模块分组的表格，每行记录一项基础设施。
+
+| 列 | 说明 |
+|----|------|
+| 基础设施名称 | 简短描述（如"全局 setInterval 泄漏检测"） |
+| 文件路径 | 相对路径 |
+| 覆盖场景 | 这个基础设施能自动抓住什么类型的 bug |
+| 来源 | 哪次 /review 引入的（commit hash 或日期） |
+
+填充规则：
+- Phase B 每新增一个 gate 规则、test helper 或回归测试，必须登记到此表
+- 不登记 = 不存在（后续 /review 会重复建设同类基础设施）
+
+#### coding-guidelines.md（编码规范）
+
+结构：按语言分组，每条规范包含 ❌ 错误写法和 ✅ 正确写法的对比示例。
+
+填充规则：
+- gate trend 分析中 ≥10 次的高频违规规则，自动提取为编码规范
+- 每条规范必须有具体的代码示例（不是抽象描述）
+- 规范和 posttooluse hook 的规则对应，hook 机械执行规范
+
+#### p0-cases.tsv（P0 场景矩阵）
+
+结构：TSV 格式，每行一个关键场景。
+
+| 列 | 说明 |
+|----|------|
+| 场景 ID | 唯一标识（如 PAIRING_KEY_NIL_CLEARS_LOCAL） |
+| 场景描述 | 用户视角的一句话描述 |
+| 验证关键词 | gate preflight 用 grep 检查的关键词 |
+| 验证范围 | 在哪些目录下搜索关键词 |
+
+填充规则：
+- /review 发现的涉及核心用户链路的 bug，如果回归会导致产品不可用，加入 P0 矩阵
+- 不是所有 bug 都是 P0，只有"用户完全无法使用某个核心功能"才算
+- gate preflight 会自动检查所有 P0 场景是否有对应的测试覆盖
+
+#### dimension-coverage.yaml（测试维度映射）
+
+结构：YAML，按模块 → 测试文件 → 维度编号列表。
+
+填充规则：
+- Phase B 每次新增或修改测试文件时，更新对应条目
+- 维度编号 1-6 对应：正常路径/副作用清理/并发安全/错误恢复/安全边界/故障后可用
+- gate 的 check_dimension_coverage 从此文件读取数据，统计维度分布
+
+#### config.yaml（模块配置）
+
+填充规则：
+- bootstrap 时自动扫描项目结构生成
+- /review 发现新模块（如新增的子包）时更新
+- 用户手动调整测试命令后应同步更新
+
 ### 1. 枚举模块
-扫描项目根目录（package.json / go.mod / *.xcodeproj / pyproject.toml / Cargo.toml / build.gradle），输出：
+扫描项目根目录（package.json / go.mod / *.xcodeproj / pyproject.toml / setup.py / setup.cfg / requirements.txt / Cargo.toml / build.gradle），输出：
 ```
 | 模块 | 语言 | 源文件数 | 测试文件数 | 基础设施 |
 ```
