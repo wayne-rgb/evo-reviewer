@@ -1,0 +1,16 @@
+{
+  "description": "Evo Review: 代码编辑后自动检查高频违规模式",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/posttooluse.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
