@@ -1,5 +1,5 @@
 {
-  "description": "Evo Review: 代码编辑后自动检查高频违规模式",
+  "description": "Evo Review: 编码规范检查 + git push 后 CI 验证信号",
   "hooks": {
     "PostToolUse": [
       {
@@ -8,6 +8,16 @@
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/posttooluse.py",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-push-signal.sh",
+            "timeout": 3
           }
         ]
       }

@@ -39,6 +39,17 @@ modules:
 
 如果项目没有 `scripts/test-governance-gate.sh`，按 references/gate-template.sh 生成。
 
+Bootstrap 追加步骤（在创建 test-governance/ 和 gate.sh 之后）：
+
+4. 追加测试原则到项目 CLAUDE.md：
+   - 读取 references/testing-strategy.md，追加到项目 CLAUDE.md（如果尚未包含"测试运行策略"章节）
+   - 读取 references/dimensions.md 中的维度定义和适用性表，追加到项目 CLAUDE.md（如果尚未包含"测试编写的 6 个维度"章节）
+   - 追加 CI 策略说明
+
+5. 配置 post-push CI hook：
+   - 如果项目 .claude/settings.json 中没有 post-push hook 配置，自动添加
+   - 创建 .claude/hooks/post-push-signal.sh（从 evo-review 的 hooks/ 复制）
+
 Bootstrap 产物纳入确认清单，和 review 发现一起确认。
 
 ### 1. 枚举模块
@@ -144,11 +155,13 @@ subagent 的工作分三阶段：
    - coding-guidelines.md：高频违规的 ❌/✅ 对比示例
    - dimension-coverage.yaml：新增测试的维度映射
 
-4. **高频违规源头治理**（自动）：
+4. **高频违规源头治理**（自动，不需用户提醒）：
    - 重新执行 `bash scripts/test-governance-gate.sh trend`
    - 对所有 ≥10 次的高频规则，检查 test-governance/coding-guidelines.md 是否已有对应指导
-   - 缺失的：从违规日志提取典型模式，编写 ❌/✅ 对比示例，加入 coding-guidelines.md
+   - **缺失的**：从违规日志提取典型模式，编写 ❌/✅ 对比示例，加入 coding-guidelines.md
+   - **已有但仍高频的**：说明规范已存在但未生效，在 commit message 中记录，不重复添加
    - coding-guidelines.md 更新后，posttooluse hook 会自动读取并执行实时检查
+   - 这一步是闭环的关键——gate 拦截是治标，生成指导是治本
 
 5. **识别架构约束 → 建议写入 CLAUDE.md**（自动）：
    - 从已验证 bug 中识别**跨模块/跨端/跨文件的架构级约束**
