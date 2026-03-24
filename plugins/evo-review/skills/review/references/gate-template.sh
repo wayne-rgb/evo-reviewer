@@ -157,6 +157,26 @@ show_trend() {
   echo ""
 }
 
+# ==================== 通用规则（所有项目适用） ====================
+
+check_license_files() {
+  echo "🔍 检查第三方许可文件..."
+  local missing=0
+  for f in LICENSE NOTICE THIRD_PARTY_NOTICES.md; do
+    if [ ! -f "$ROOT_DIR/$f" ]; then
+      warn "缺少必需文件：$f"
+      log_violation "R-license-missing" "BLOCK" "$f" "许可文件 $f 不存在"
+      missing=1
+    fi
+  done
+  if [ "$missing" -ne 0 ]; then
+    fail "缺少第三方许可文件，请补充"
+    return 1
+  fi
+  echo "  ✅ 第三方许可文件检查完成"
+  return 0
+}
+
 # ==================== 项目规则（按需填充） ====================
 
 # 在这里添加项目特有的检查规则，例如：
@@ -165,9 +185,19 @@ show_trend() {
 run_static_analysis() {
   echo ""
   echo "=== 静态分析检查 ==="
+  local sa_failed=0
+
   check_dimension_coverage
+  check_license_files || sa_failed=1
+
   # 调用项目特有规则，示例：
   # check_xxx || sa_failed=1
+
+  if [ "$sa_failed" -ne 0 ]; then
+    echo ""
+    fail "静态分析发现阻塞性问题，请修复后再继续"
+  fi
+
   pass "静态分析检查通过"
 }
 
