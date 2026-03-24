@@ -33,12 +33,9 @@ modules:
    - 维度定义和适用性表（如果尚未包含"测试编写的 6 个维度"章节）
    - CI 策略说明
 
-4. 配置 post-push CI hook：
-   - 先检查项目 .claude/settings.json 中是否已有功能等价的 post-push hook，如果有则跳过
-   - 如果没有，在 .claude/settings.json 中添加 post-push hook 配置
-   - 创建 .claude/hooks/post-push-signal.sh
+4. 检查 .gitignore 是否包含 `test-governance/gate-violations.log`，如果没有则追加。
 
-5. 检查 .gitignore 是否包含 `test-governance/gate-violations.log`，如果没有则追加。
+**注意：post-push CI hook 由插件自带（hooks/hooks.json），安装插件后自动对所有项目生效，bootstrap 不需要在项目 settings.json 中重复注册。**
 
 Bootstrap 产物纳入确认清单，和 review 发现一起确认。
 
