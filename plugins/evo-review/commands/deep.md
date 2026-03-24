@@ -166,6 +166,7 @@ $ARGUMENTS — 可选：
 | R4 验证+修复 | worktree agent | `model: "opus"` | 红绿验证需要准确性 |
 | R5 交叉扫描 | Explore agent | `model: "sonnet"` | 模式匹配，sonnet 够用 |
 | R5 交叉验证+修复 | worktree agent | `model: "opus"` | 同 R4 |
-| Phase B 基础设施 | 普通 agent（直接在 main） | `model: "opus"` | 不用 worktree，直接改 gate 脚本+文档 |
+| Phase B-1 gate 规则 | 普通 agent（直接在 main） | `model: "opus"` | 写 gate 规则 + 1 次 preflight + commit |
+| Phase B-2 文档+治理 | 普通 agent（直接在 main） | `model: "opus"` | B-1 完成后串行：更新文档 + 趋势 + 存量清理 + commit |
 
 主会话保持 opus 做决策、去重、合并 worktree。
