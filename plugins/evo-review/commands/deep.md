@@ -147,6 +147,6 @@ $ARGUMENTS — 可选：
 | R4 验证+修复 | worktree agent | `model: "opus"` | 判断 bug 真实性需要准确性 |
 | R5 交叉扫描 | Explore agent | `model: "sonnet"` | 同上 |
 | R5 交叉验证+修复 | worktree agent | `model: "opus"` | 同上 |
-| Phase B 基础设施 | worktree agent | `model: "sonnet"` | 写 gate 规则+更新文档，sonnet 够用 |
+| Phase B 基础设施 | worktree agent | `model: "opus"` | 测试 helper 设计需要抽象能力，gate 规则+文档也受益于准确性 |
 
 主会话保持 opus 做决策、去重、合并 worktree。
