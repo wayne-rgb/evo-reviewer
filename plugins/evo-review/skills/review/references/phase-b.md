@@ -34,14 +34,21 @@
    - 修复后跑该模块的单元测试验证无回归
    - 一次只清 1 条规则，下次 review 清第 2 条
 
-6. **识别跨模块约束 → 优先建议 gate 规则**（自动）：
+6. **gate 规则卫生检查**（自动，防止 gate.sh 无限膨胀）：
+   - 从 trend 输出中找**长期 0 触发**的规则（连续多次 review 均无违规记录）
+   - 对每条 0 触发规则，grep codebase 确认该模式是否已从代码中消失。消失了 → 规则完成使命，建议删除
+   - 检查是否有规则已被 posttooluse.py hook 实时拦截（hook 在 Edit/Write 时就阻止了，gate 里的同类规则冗余）→ 建议删除
+   - 检查是否有多条规则检查同一类问题的不同变体 → 建议合并
+   - 淘汰/合并建议列入确认清单，由用户确认后执行
+
+7. **识别跨模块约束 → 优先建议 gate 规则**（自动）：
    - 从已验证 bug 中识别跨模块/跨端/跨文件的架构级约束
    - **跨模块契约类**（类型定义不一致、状态机不同步、枚举缺失等）→ 优先建议新增 gate 规则到 `scripts/test-governance-gate.sh` 的跨模块检查区块，用 diff/grep 机械检测，不依赖 AI
    - **架构约束类**（部署顺序、兼容性、设计决策等）→ 建议写入 CLAUDE.md
    - 如有发现，在确认清单/报告中单独列出，标明建议类型（gate 规则 / CLAUDE.md）
    - 不自动写入，由用户确认后执行
 
-subagent 内部：写 gate 规则 + 写 helper → 跑 1 次 preflight 验证 → 趋势分析 + 源头治理 → 存量违规清理（top 1 规则）→ 更新 test-governance/ → commit + push
+subagent 内部：写 gate 规则 + 写 helper → 跑 1 次 preflight 验证 → 趋势分析 + 源头治理 → 存量违规清理（top 1 规则）→ 规则卫生检查（淘汰/合并建议）→ 更新 test-governance/ → commit + push
 
 **Phase B 效率铁律：**
 - preflight 最多跑 **1 次**（所有规则写完后统一验证），禁止每条规则单独跑
