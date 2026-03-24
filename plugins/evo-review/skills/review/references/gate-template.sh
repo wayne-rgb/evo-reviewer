@@ -177,6 +177,57 @@ check_license_files() {
   return 0
 }
 
+# ==================== 跨模块契约检查（多模块项目填充） ====================
+#
+# 跨模块一致性用 diff/grep 机械检测，不依赖 AI 判断。
+# bootstrap 扫描通信拓扑后自动生成初始规则，Phase B 根据 review 发现持续补充。
+#
+# 规则模板 — 按需复制并修改：
+#
+# 枚举值一致性检查（TypeScript enum vs Swift enum）：
+#   check_enum_sync() {
+#     local ts_file="$ROOT_DIR/module-a/src/types/index.ts"
+#     local swift_file="$ROOT_DIR/module-b/Sources/Message.swift"
+#     [ -f "$ts_file" ] && [ -f "$swift_file" ] || return 0
+#     # 提取 TypeScript 枚举值
+#     local ts_values=$(grep -oE "'[a-zA-Z_]+'" "$ts_file" | sort -u)
+#     # 提取 Swift case 值
+#     local swift_values=$(grep -oE 'case [a-zA-Z_]+' "$swift_file" | sed 's/case //' | sort -u)
+#     # 比较差异
+#     local diff_result=$(diff <(echo "$ts_values") <(echo "$swift_values") || true)
+#     if [ -n "$diff_result" ]; then
+#       warn "枚举值不一致：$(basename "$ts_file") vs $(basename "$swift_file")"
+#       log_violation "CROSS-enum-sync" "WARN" "$ts_file" "枚举值与 $swift_file 不一致"
+#     fi
+#   }
+#
+# 状态机转换表一致性检查：
+#   check_state_machine_sync() {
+#     local source_file="$ROOT_DIR/module-a/src/state-machine.ts"
+#     local target_file="$ROOT_DIR/module-b/Sources/TaskViewModel.swift"
+#     [ -f "$source_file" ] && [ -f "$target_file" ] || return 0
+#     # 提取允许的状态转换（格式因项目而异，按需调整 grep 模式）
+#     local source_transitions=$(grep -oE '[A-Z_]+ *=> *[A-Z_]+' "$source_file" | sort -u)
+#     local target_transitions=$(grep -oE '[A-Z_]+ *-> *[A-Z_]+' "$target_file" | sort -u)
+#     # ... 比较逻辑
+#   }
+#
+# 消息类型 handler 覆盖检查：
+#   check_handler_coverage() {
+#     local types_file="$ROOT_DIR/module-a/src/types/index.ts"
+#     local handler_file="$ROOT_DIR/module-b/Sources/MessageHandler.swift"
+#     [ -f "$types_file" ] && [ -f "$handler_file" ] || return 0
+#     # 提取所有消息类型
+#     local msg_types=$(grep -oE "type: '[a-z_]+'" "$types_file" | grep -oE "'[a-z_]+'" | tr -d "'")
+#     # 检查 handler 中是否有对应处理
+#     for t in $msg_types; do
+#       if ! grep -q "$t" "$handler_file"; then
+#         warn "消息类型 $t 在 $(basename "$handler_file") 中无 handler"
+#         log_violation "CROSS-handler-missing" "WARN" "$handler_file" "消息类型 $t 无 handler"
+#       fi
+#     done
+#   }
+
 # ==================== 项目规则（按需填充） ====================
 
 # 在这里添加项目特有的检查规则，例如：
@@ -189,6 +240,11 @@ run_static_analysis() {
 
   check_dimension_coverage
   check_license_files || sa_failed=1
+
+  # 调用跨模块检查规则（bootstrap 生成后取消注释）：
+  # check_enum_sync || sa_failed=1
+  # check_state_machine_sync || sa_failed=1
+  # check_handler_coverage || sa_failed=1
 
   # 调用项目特有规则，示例：
   # check_xxx || sa_failed=1

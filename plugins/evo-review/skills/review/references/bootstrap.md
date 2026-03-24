@@ -35,6 +35,27 @@ modules:
 
 4. 检查 .gitignore 是否包含 `test-governance/gate-violations.log`，如果没有则追加。
 
+5. **跨模块通信拓扑扫描**（多模块项目自动执行，单模块跳过）：
+   - 在各模块中搜索通信相关的导入和模式（WebSocket、HTTP client/server、gRPC、消息队列等）
+   - 识别哪些模块之间存在通信关系（如：模块 A 是 WebSocket server，模块 B 是 client）
+   - 识别共享的类型定义文件（如：TypeScript 的 types/index.ts 和 Swift 的 Message.swift）
+   - 识别共享的状态机/枚举定义
+   - 将发现的跨模块关系写入 `test-governance/config.yaml` 的 `cross_module` 段：
+     ```yaml
+     cross_module:
+       contracts:
+         - name: "WS 消息类型一致性"
+           source: "macbook-agent/src/types/index.ts"
+           target: "iOS-app/.../Message.swift"
+           check: "enum_values"  # 检查类型：enum_values | field_names | state_transitions
+         - name: "状态机转换表一致性"
+           source: "macbook-agent/src/task/state-machine.ts"
+           target: "iOS-app/.../TaskViewModel.swift"
+           check: "state_transitions"
+     ```
+   - 根据发现的跨模块关系，在 gate.sh 的跨模块检查区块中生成初始规则
+   - 扫描结果纳入确认清单，和其他 bootstrap 产物一起确认
+
 **注意：post-push CI hook 由插件自带（hooks/hooks.json），安装插件后自动对所有项目生效，bootstrap 不需要在项目 settings.json 中重复注册。**
 
 Bootstrap 产物纳入确认清单，和 review 发现一起确认。
