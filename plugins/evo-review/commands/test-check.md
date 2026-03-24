@@ -1,13 +1,14 @@
 ---
-name: test-check
-description: /test-check — 检查测试文件的维度覆盖质量。使用 /test-check path/to/test.ts 评估测试是否达标。
+description: 检查测试文件的维度覆盖质量。/test-check path/to/test.ts 评估测试是否达标。
 argument-hint: <test-file-or-module-path>
-allowed-tools: [Read, Glob, Grep]
+allowed-tools: Read, Glob, Grep
 ---
 
 # /test-check — 检查测试质量是否达标
 
 快速检查指定测试文件的维度覆盖情况。只读不改。
+
+维度定义：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/dimensions.md
 
 ## 输入
 
@@ -17,7 +18,7 @@ $ARGUMENTS — 测试文件路径或源码模块路径。
 
 1. 找到测试文件和被测源码，同时读取
 2. 判断被测代码类型（纯函数 / 有状态类 / 外部接口 / 单例服务 / 共享资源）
-3. 按 references/dimensions.md 的"适用性判断"表确定该代码需要哪些维度
+3. 按维度定义的"适用性判断"表确定该代码需要哪些维度
 4. 逐维度评估（搜索关键词判断覆盖情况）：
 
 | 维度 | 判断方法 |
