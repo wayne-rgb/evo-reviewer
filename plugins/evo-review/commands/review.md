@@ -82,13 +82,7 @@ subagent 的工作分三阶段：
 
 **幻觉发现（❌）不出现在最终报告的修复列表中，但在报告末尾单独列出供参考。**
 
-#### 阶段 B：更新测试基础设施（阶段 A 完成后）
-
-**Phase B 直接在 main 上执行，不使用 worktree。** 改动内容是 gate 脚本和 test-governance 文档，不涉及业务代码，无需隔离。
-
-@${CLAUDE_PLUGIN_ROOT}/skills/review/references/phase-b.md
-
-#### 阶段 C：输出验证报告 + 等待用户确认合并
+#### 阶段 B：输出验证报告 + 等待用户确认合并
 
 阶段 A worktree 完成后，主会话汇总验证结果：
 
@@ -111,7 +105,13 @@ subagent 的工作分三阶段：
 用户确认后：
 1. 合并已确认的 worktree 分支到 main + push
 2. 清理 worktree
-3. 执行阶段 B 更新测试基础设施
+3. 执行阶段 C 更新测试基础设施
+
+#### 阶段 C：更新测试基础设施（合并到 main 后执行）
+
+**Phase C 直接在 main 上执行，不使用 worktree。** 改动内容是 gate 脚本和 test-governance 文档，不涉及业务代码，无需隔离。
+
+@${CLAUDE_PLUGIN_ROOT}/skills/review/references/phase-b.md
 
 ## --deep 模式
 
@@ -122,13 +122,13 @@ subagent 的工作分三阶段：
 在输出最终报告之前，逐项检查以下清单。任何未完成项必须补完后才能出报告：
 
 - [ ] 阶段 A：所有 ✅ bug 已通过红绿验证 + 已在 worktree commit
-- [ ] 阶段 C：验证报告已输出，用户已确认，worktree 已合并 + push
-- [ ] Phase B-1：新 bug 模式已转化为 gate 规则（preflight 通过）
-- [ ] Phase B-2：新测试 helper 已创建且被至少一个测试使用
-- [ ] Phase B-3：test-governance/ 已更新
-- [ ] Phase B-4：trend 已重新执行，高频规则已检查覆盖情况
-- [ ] Phase B-5：top 1 高频规则的存量违规已清理
-- [ ] Phase B-6：已检查是否有架构约束需建议写入 CLAUDE.md
+- [ ] 阶段 B：验证报告已输出，用户已确认，worktree 已合并 + push
+- [ ] Phase C-1：新 bug 模式已转化为 gate 规则（preflight 通过）
+- [ ] Phase C-2：新测试 helper 已创建且被至少一个测试使用
+- [ ] Phase C-3：test-governance/ 已更新
+- [ ] Phase C-4：trend 已重新执行，高频规则已检查覆盖情况
+- [ ] Phase C-5：top 1 高频规则的存量违规已清理
+- [ ] Phase C-6：已检查是否有架构约束需建议写入 CLAUDE.md
 - [ ] 所有改动已 commit + push
 
 最终报告：
@@ -164,6 +164,6 @@ subagent 的工作分三阶段：
 |------|-----------|-----------|------|
 | 分析 | Explore agent | `model: "sonnet"` | 代码扫描是机械性工作，sonnet 快 3-4 倍 |
 | 阶段 A 红绿验证+修复 | worktree agent | `model: "opus"` | 判断 bug 真实性需要准确性 |
-| Phase B 基础设施 | 普通 agent（直接在 main） | `model: "opus"` | 不用 worktree，直接改 gate 脚本+文档 |
+| 阶段 C 基础设施 | 普通 agent（直接在 main） | `model: "opus"` | 不用 worktree，直接改 gate 脚本+文档 |
 
 主会话保持 opus 做决策、去重、合并 worktree。
