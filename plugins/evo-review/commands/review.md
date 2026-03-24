@@ -66,7 +66,7 @@ subagent 的工作分三阶段：
 1. **读源码确认** — bug 是否存在
 2. **写测试精确复现** → 运行 → 必须失败（红）
 3. **写 fix** → 运行测试 → 必须通过（绿）
-4. **跑该模块已有测试** → 必须无回归
+4. **跑该模块 lint + 已有测试** → 必须无回归（**lint 不能跳过**，lint error 会破坏 CI）
 5. 新测试的维度覆盖登记到 `test-governance/dimension-coverage.yaml`
 
 **判定规则（无中间态）：**
@@ -82,7 +82,9 @@ subagent 的工作分三阶段：
 
 **幻觉发现（❌）不出现在最终报告的修复列表中，但在报告末尾单独列出供参考。**
 
-#### 阶段 B：更新测试基础设施（阶段 A 完成后，单独 subagent）
+#### 阶段 B：更新测试基础设施（阶段 A 完成后）
+
+**Phase B 直接在 main 上执行，不使用 worktree。** 改动内容是 gate 脚本和 test-governance 文档，不涉及业务代码，无需隔离。
 
 @${CLAUDE_PLUGIN_ROOT}/skills/review/references/phase-b.md
 
@@ -128,7 +130,6 @@ subagent 的工作分三阶段：
 - [ ] Phase B-5：top 1 高频规则的存量违规已清理
 - [ ] Phase B-6：已检查是否有架构约束需建议写入 CLAUDE.md
 - [ ] 所有改动已 commit + push
-- [ ] worktree 已清理
 
 最终报告：
 ```
@@ -163,6 +164,6 @@ subagent 的工作分三阶段：
 |------|-----------|-----------|------|
 | 分析 | Explore agent | `model: "sonnet"` | 代码扫描是机械性工作，sonnet 快 3-4 倍 |
 | 阶段 A 红绿验证+修复 | worktree agent | `model: "opus"` | 判断 bug 真实性需要准确性 |
-| Phase B 基础设施 | worktree agent | `model: "opus"` | 测试 helper 设计需要抽象能力，gate 规则+文档也受益于准确性 |
+| Phase B 基础设施 | 普通 agent（直接在 main） | `model: "opus"` | 不用 worktree，直接改 gate 脚本+文档 |
 
 主会话保持 opus 做决策、去重、合并 worktree。

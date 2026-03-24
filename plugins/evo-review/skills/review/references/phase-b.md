@@ -1,6 +1,10 @@
-# 阶段 B：更新测试基础设施
+# Phase B：更新测试基础设施
 
-**这一步是 review 的核心产出，不能跳过。** 根据已验证 bug 的模式，更新以下四类基础设施：
+**这一步是 review 的核心产出，不能跳过。**
+
+**执行方式：直接在 main 上执行，不使用 worktree。** Phase B 改动的是 gate 脚本、test-governance 文档、编码规范等基础设施文件，不涉及业务代码，无需 worktree 隔离。直接在 main 上改动可避免 worktree 路径解析问题（gate 脚本的 ROOT_DIR 在 worktree 下可能不正确）。
+
+根据已验证 bug 的模式，更新以下四类基础设施：
 
 1. **gate 新增规则**（治本）— 在 `scripts/test-governance-gate.sh` 中新增静态分析规则：
    - 分析已验证 bug 的共性模式
