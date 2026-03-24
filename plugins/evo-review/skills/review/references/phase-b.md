@@ -8,33 +8,33 @@
 
 ## Phase B-1：gate 规则 + preflight（subagent 1）
 
-任务范围：只写 gate 规则和 test helper，写完后跑 1 次 preflight，然后 commit。
+**严格按以下 4 步顺序执行，禁止交叉或回头：**
 
-1. **gate 新增规则**（治本）— 在 `scripts/test-governance-gate.sh` 中新增静态分析规则：
-   - 分析已验证 bug 的共性模式
-   - 每个模式对应一个 gate 规则，能在 preflight 时自动检测同类问题
-   - 新规则默认仅警告不阻塞（WARN），验证稳定后再升级为阻塞
-   - **所有新规则写完后只跑 1 次 `bash scripts/test-governance-gate.sh preflight 2>&1 | tail -30`**，禁止每写一条就跑一次
+**第 1 步：一次性写完所有 gate 规则。** 在 `scripts/test-governance-gate.sh` 中新增静态分析规则：
+   - 分析已验证 bug 的共性模式，每个模式对应一个 gate 规则
+   - 新规则默认 WARN（不阻塞），即使有误报也不影响门禁
+   - **写规则期间禁止运行 preflight** — WARN 规则不需要逐条验证
 
-2. **测试 helper 扩展**（治本）— 在对应模块的测试基础设施中新增通用方法：
+**第 2 步：一次性写完所有 test helper。** 在对应模块的测试基础设施中新增通用方法：
    - 先查 test-governance/config.yaml 中是否记录了测试基础设施路径
    - 没有则搜索项目中已有的测试 helper/fixture/infrastructure 文件
    - 新 helper 必须被至少一个回归测试使用
 
-3. **识别跨模块约束 → 优先建议 gate 规则**（自动）：
+**第 3 步：跑 1 次 preflight。** 所有规则和 helper 都写完后，执行：
+   ```
+   bash scripts/test-governance-gate.sh preflight 2>&1 | tail -30
+   ```
+   - 通过 → 进入第 4 步
+   - 失败（BLOCK 规则报错）→ 修正导致失败的规则，再跑 1 次，**总计不超过 2 次**
+   - WARN 输出不算失败，不需要修正
+
+**第 4 步：识别跨模块约束。**
    - 从已验证 bug 中识别跨模块/跨端/跨文件的架构级约束
-   - **跨模块契约类**（类型定义不一致、状态机不同步、枚举缺失等）→ 优先建议新增 gate 规则到 `scripts/test-governance-gate.sh` 的跨模块检查区块，用 diff/grep 机械检测，不依赖 AI
+   - **跨模块契约类**（类型定义不一致、状态机不同步、枚举缺失等）→ 优先建议新增 gate 规则，用 diff/grep 机械检测
    - **架构约束类**（部署顺序、兼容性、设计决策等）→ 建议写入 CLAUDE.md
-   - 如有发现，在确认清单/报告中单独列出，标明建议类型（gate 规则 / CLAUDE.md）
-   - 不自动写入，由用户确认后执行
+   - 如有发现，在确认清单中列出，不自动写入
 
-**B-1 完成后 commit + push。**
-
-**B-1 效率铁律：**
-- preflight 最多跑 **1 次**（所有规则写完后统一验证），禁止每条规则单独跑
-- 新规则都是 WARN 级别，即使有误报也不会阻塞门禁，后续 review 再修正
-- 如果 preflight 失败，检查是哪条新规则导致的，修正后再跑 1 次，总计不超过 2 次
-- 预期 tool uses ≤ 30
+**第 4 步完成后 commit + push。预期 tool uses ≤ 30。**
 
 ## Phase B-2：文档更新 + 趋势治理 + 存量清理（subagent 2）
 
