@@ -27,7 +27,7 @@ modules:
     helper_dir: "src/__tests__/helpers"
 ```
 
-CI subagent 读取 config.yaml，对每个有改动的模块执行 lint_command → typecheck_command → unit_command。跨模块改动额外执行 cross_command。
+CI subagent 读取 config.yaml，对每个有改动的模块按顺序执行已定义的命令：lint_command → typecheck_command → errcheck_command（及其他自定义 *_command 字段）→ unit_command。跨模块改动额外执行 cross_command。字段不存在则跳过该步骤。
 
 ### 多语言 config.yaml 示例
 

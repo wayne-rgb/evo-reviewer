@@ -42,10 +42,11 @@ bash scripts/test-governance-gate.sh preflight | tail -20
 判断逻辑：
 
 - **只改了文档/配置**（*.md, *.yaml, *.json, *.toml 等）→ 只跑治理门禁（步骤 3 已完成），结束
-- **单模块改动** → 该模块执行：
-  1. lint（lint_command，如有）
-  2. 类型检查（typecheck_command，如有）
-  3. 单元测试（unit_command）
+- **单模块改动** → 该模块执行（按 config.yaml 中定义的命令，有则跑无则跳）：
+  1. lint（lint_command）
+  2. 类型检查（typecheck_command）
+  3. 额外静态分析（errcheck_command 等自定义字段）
+  4. 单元测试（unit_command）
   - 所有命令输出用 `| tail -20` 截断
 - **跨模块改动** → 每个有改动的模块执行上述流程 + 额外执行集成测试（cross_command，如有）
 
