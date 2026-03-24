@@ -8,9 +8,9 @@
 
 | 层级 | 能力 | 触发方式 |
 |------|------|----------|
-| **原则层** | 测试铁律 + 6 维度 + CI 策略写入项目 CLAUDE.md | 首次 `/review` 自动 bootstrap |
+| **原则层** | 测试铁律 + 6 维度 + CI 策略写入项目 CLAUDE.md | 首次 `/review` 或 `/deep` 自动 bootstrap |
 | **执行层** `/ci` | git push 后自动 CI 验证（lint + 类型检查 + 单元测试） | PostToolUse hook 自动触发 |
-| **优化层** `/review` | 代码审查 + 红绿验证 + 基础设施进化 | 手动调用 |
+| **优化层** `/review` `/deep` | 代码审查 + 红绿验证 + 基础设施进化 | 手动调用 |
 | **检查层** `/test-check` | 测试文件维度覆盖质量评估 | 手动调用 |
 
 ## 核心特色
@@ -39,7 +39,8 @@ git clone <repo-url> ~/.claude/plugins/evo-review
 ```bash
 /review                    # 审查最近 5 个 commit 涉及的模块
 /review src/task/          # 审查指定目录
-/review --deep             # 全模块深度审查（5 轮分析 + 红绿验证 + 交叉检验）
+/deep                      # 全模块深度审查（5 轮分析 + 红绿验证 + 交叉检验）
+/deep macbook-agent/       # 指定模块深度审查
 /test-check path/to/test   # 检查测试文件的维度覆盖质量
 ```
 
@@ -50,7 +51,7 @@ git clone <repo-url> ~/.claude/plugins/evo-review
 
 ## 首次使用
 
-在任何项目中首次运行 `/review`，会自动 bootstrap 全套测试体系：
+在任何项目中首次运行 `/review` 或 `/deep`，会自动 bootstrap 全套测试体系：
 
 **测试治理目录：**
 ```
@@ -88,7 +89,7 @@ scripts/
 阶段 B：更新测试基础设施（gate 规则 + helper + 源头治理）
 ```
 
-### 深度模式 `/review --deep`
+### 深度模式 `/deep`
 
 ```
 R1: 标准五类扫描
@@ -118,20 +119,26 @@ Claude 开 background subagent
 evo-review/
 ├── .claude-plugin/
 │   └── plugin.json                 # Plugin 元数据
+├── commands/
+│   ├── review.md                   # /review 命令定义
+│   ├── deep.md                     # /deep 命令定义
+│   └── test-check.md               # /test-check 命令定义
 ├── skills/
 │   ├── review/
-│   │   ├── SKILL.md                # /review 命令（自包含）
 │   │   └── references/
+│   │       ├── bootstrap.md        # 共享：前置检查 + bootstrap
+│   │       ├── phase-b.md          # 共享：阶段 B 基础设施更新
+│   │       ├── efficiency.md       # 共享：效率约束
 │   │       ├── dimensions.md       # 6 维度定义 + 适用性表
 │   │       ├── language-adapters.md # 语言适配（泄漏形态/检测方式）
 │   │       ├── gate-template.sh    # 门禁骨架模板
 │   │       └── testing-strategy.md # 测试运行策略铁律 + CI 策略
-│   ├── ci/
-│   │   ├── SKILL.md                # /ci 命令（post-push 自动触发）
-│   │   └── references/
-│   │       └── ci-procedure.md     # CI 执行流程 + config.yaml 格式
-│   └── test-check/
-│       └── SKILL.md                # /test-check 命令
+│   ├── deep/
+│   │   └── SKILL.md                # /deep skill 元数据
+│   └── ci/
+│       ├── SKILL.md                # /ci 命令（post-push 自动触发）
+│       └── references/
+│           └── ci-procedure.md     # CI 执行流程 + config.yaml 格式
 ├── hooks/
 │   ├── hooks.json                  # Hook 注册（编码规范 + post-push CI）
 │   ├── posttooluse.py              # 编辑后自动检查违规
