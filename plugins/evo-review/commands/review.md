@@ -129,12 +129,8 @@ subagent 的工作分三阶段：
 
 - [ ] 阶段 A：所有 ✅ bug 已通过红绿验证 + 已在 worktree commit
 - [ ] 阶段 B：验证报告已输出，用户已确认，worktree 已合并 + push
-- [ ] Phase C-1：新 bug 模式已转化为 gate 规则（preflight 通过）
-- [ ] Phase C-2：新测试 helper 已创建且被至少一个测试使用
-- [ ] Phase C-3：test-governance/ 已更新
-- [ ] Phase C-4：trend 已重新执行，高频规则已检查覆盖情况
-- [ ] Phase C-5：top 1 高频规则的存量违规已清理
-- [ ] Phase C-6：已检查是否有架构约束需建议写入 CLAUDE.md
+- [ ] 阶段 C / B-1 subagent：gate 新增规则已写入 + preflight 通过 + test helper 已创建 + 跨模块约束已检查
+- [ ] 阶段 C / B-2 subagent：test-governance/ 文档已更新 + trend 已执行 + 高频规则已检查 + top 1 存量已清理 + 卫生检查已完成
 - [ ] 所有改动已 commit + push
 
 最终报告：
@@ -170,6 +166,7 @@ subagent 的工作分三阶段：
 |------|-----------|-----------|------|
 | 分析 | Explore agent | `model: "sonnet"` | 代码扫描是机械性工作，sonnet 快 3-4 倍 |
 | 阶段 A 红绿验证+修复 | worktree agent | `model: "opus"` | 判断 bug 真实性需要准确性 |
-| 阶段 C 基础设施 | 普通 agent（直接在 main） | `model: "opus"` | 不用 worktree，直接改 gate 脚本+文档 |
+| Phase B-1 gate 规则 | 普通 agent（直接在 main） | `model: "opus"` | 写 gate 规则 + 1 次 preflight + commit |
+| Phase B-2 文档+治理 | 普通 agent（直接在 main） | `model: "opus"` | B-1 完成后串行：更新文档 + 趋势 + 存量清理 + commit |
 
 主会话保持 opus 做决策、去重、合并 worktree。

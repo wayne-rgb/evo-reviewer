@@ -119,12 +119,8 @@ $ARGUMENTS — 可选：
 - [ ] R4：所有 ✅ bug 已修复 + 回归测试已通过 + 已在 worktree commit
 - [ ] R5：跨模块扩展已验证+修复 + 已在 worktree commit
 - [ ] 用户确认后合并 worktree + push + 清理
-- [ ] Phase B-1：新 bug 模式已转化为 gate 规则（preflight 通过）
-- [ ] Phase B-2：新测试 helper 已创建且被至少一个测试使用
-- [ ] Phase B-3：test-governance/ 已更新
-- [ ] Phase B-4：trend 已重新执行，高频规则已检查覆盖情况
-- [ ] Phase B-5：top 1 高频规则的存量违规已清理
-- [ ] Phase B-6：已检查是否有跨模块约束需建议 gate 规则或写入 CLAUDE.md
+- [ ] Phase B-1 subagent：gate 新增规则已写入 + preflight 通过 + test helper 已创建 + 跨模块约束已检查
+- [ ] Phase B-2 subagent：test-governance/ 文档已更新 + trend 已执行 + 高频规则已检查 + top 1 存量已清理 + 卫生检查已完成
 - [ ] 所有改动已 commit + push
 
 最终报告：
