@@ -1,6 +1,5 @@
 ---
-description: 检查测试文件的维度覆盖质量。/test-check path/to/test.ts 评估测试是否达标。
-argument-hint: <test-file-or-module-path>
+description: 检查测试文件的维度覆盖质量
 allowed-tools: Read, Glob, Grep
 ---
 

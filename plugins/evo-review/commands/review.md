@@ -1,6 +1,5 @@
 ---
-description: 自进化代码审查：红绿验证对抗幻觉 + 门禁自动进化。/review 审查最近改动，/review path/ 审查指定目录，/review --deep 全模块深度审查。
-argument-hint: [path...] [--deep]
+description: 自进化代码审查：红绿验证对抗幻觉 + 门禁自动进化
 allowed-tools: Read, Glob, Grep, Bash(*), Write, Edit, Agent
 ---
 
