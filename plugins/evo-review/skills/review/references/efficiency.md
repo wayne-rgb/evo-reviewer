@@ -6,3 +6,4 @@
 - 单个 subagent 修复项 ≤ 5
 - 不同语言拆不同 subagent
 - worktree 合并后立即清理，不留残余
+- Phase B 的 preflight 最多跑 1 次（所有规则写完后统一验证），禁止逐条验证

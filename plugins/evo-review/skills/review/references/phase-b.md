@@ -9,8 +9,8 @@
 1. **gate 新增规则**（治本）— 在 `scripts/test-governance-gate.sh` 中新增静态分析规则：
    - 分析已验证 bug 的共性模式
    - 每个模式对应一个 gate 规则，能在 preflight 时自动检测同类问题
-   - 新规则默认仅警告不阻塞，验证稳定后再升级为阻塞
-   - 运行 `bash scripts/test-governance-gate.sh preflight` 验证新规则不破坏门禁
+   - 新规则默认仅警告不阻塞（WARN），验证稳定后再升级为阻塞
+   - **所有新规则写完后只跑 1 次 `bash scripts/test-governance-gate.sh preflight`**，不要每写一条就跑一次。WARN 级别的规则不会阻塞门禁，无需反复验证
 
 2. **测试 helper 扩展**（治本）— 在对应模块的测试基础设施中新增通用方法：
    - 先查 test-governance/config.yaml 中是否记录了测试基础设施路径
@@ -41,4 +41,9 @@
    - 如有发现，在确认清单/报告中单独列出，标明建议类型（gate 规则 / CLAUDE.md）
    - 不自动写入，由用户确认后执行
 
-subagent 内部：写 gate 规则 + 写 helper → 跑 preflight 验证 → 趋势分析 + 源头治理 → 存量违规清理（top 1 规则）→ 更新 test-governance/ → commit + push
+subagent 内部：写 gate 规则 + 写 helper → 跑 1 次 preflight 验证 → 趋势分析 + 源头治理 → 存量违规清理（top 1 规则）→ 更新 test-governance/ → commit + push
+
+**Phase B 效率铁律：**
+- preflight 最多跑 **1 次**（所有规则写完后统一验证），禁止每条规则单独跑
+- 新规则都是 WARN 级别，即使有误报也不会阻塞门禁，后续 review 再修正
+- 如果 preflight 失败，检查是哪条新规则导致的，修正后再跑 1 次，总计不超过 2 次
