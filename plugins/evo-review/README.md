@@ -51,9 +51,11 @@
 evo-review/
 ├── .claude-plugin/
 │   └── plugin.json
+├── commands/
+│   ├── review.md                   # /review 命令（用户直接调用）
+│   └── test-check.md               # /test-check 命令
 ├── skills/
 │   ├── review/
-│   │   ├── SKILL.md                # /review 命令
 │   │   └── references/
 │   │       ├── bootstrap.md        # 首次 bootstrap 流程
 │   │       ├── phase-b.md          # 阶段 3 基础设施更新
@@ -62,8 +64,6 @@ evo-review/
 │   │       ├── dimensions.md       # 6 维度定义
 │   │       ├── testing-strategy.md # 测试运行策略
 │   │       └── gate-template.sh    # 门禁骨架模板
-│   ├── test-check/
-│   │   └── SKILL.md                # /test-check 命令
 │   └── ci/
 │       ├── SKILL.md                # /ci（hook 自动触发）
 │       └── references/

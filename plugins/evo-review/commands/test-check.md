@@ -9,7 +9,7 @@ argument-hint: "[test-file-path]"
 
 快速检查指定测试文件的维度覆盖情况。只读不改。
 
-维度定义：[dimensions.md](../review/references/dimensions.md)
+维度定义：[dimensions.md](${CLAUDE_PLUGIN_ROOT}/skills/review/references/dimensions.md)
 
 ## 输入
 
