@@ -35,6 +35,7 @@ $ARGUMENTS — 可选：
 3. **筛选**：改动涉及的模块 ∩ 业务流涉及的模块 → 受影响的业务流
 4. **补充**：如果改动了 `cross_module.shared_types` 中的文件 → 所有消费该类型的业务流也加入
 5. **`/review dir/` 模式**：找所有经过该目录所属模块的业务流
+6. **`/review *` 模式**：跳过步骤 2-4 筛选，直接使用全部 business_flows
 
 如果 `config.yaml` 无 `cross_module` 段（未 bootstrap 或单模块），先从 CLAUDE.md 通信拓扑 + `p0-cases.tsv` 推导。
 
