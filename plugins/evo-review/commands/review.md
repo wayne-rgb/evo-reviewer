@@ -2,6 +2,7 @@
 name: review
 description: 跨模块业务流审查：追踪端到端业务流，在模块交界处找真实 bug。红绿验证对抗幻觉 + 门禁自动进化。
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Agent
+argument-hint: "[dir/ or *]"
 ---
 
 # /review — 跨模块业务流审查
