@@ -12,5 +12,5 @@
 4. **趋势检查**：`bash scripts/test-governance-gate.sh trend 2>&1 | tail -30`
    - ≥10 次高频规则：检查 coding-guidelines.md 是否有对应 ❌/✅ 示例，缺失则补
    - 最高频的 1 条规则：按 coding-guidelines.md 的 ✅ 写法批量修复存量违规，跑单元测试验证
-5. **卫生检查**：trend 中长期 0 触发的规则，grep 确认模式已从代码消失 → 建议删除（列出，不自动删）
+5. **卫生检查**：trend 输出末尾自动包含"门禁卫生检查"段落（从未触发的规则列表）。若项目 gate.sh 的 `show_trend()` 缺少卫生检查段落，从插件 gate-template.sh 补入。对列出的规则，grep 确认对应代码模式是否仍存在 → 已消失的建议删除（列出，不自动删）
 6. **commit + push**

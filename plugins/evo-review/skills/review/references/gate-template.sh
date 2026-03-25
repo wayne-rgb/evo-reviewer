@@ -155,6 +155,59 @@ show_trend() {
     echo "  当前无高频违规规则，门禁运转良好。"
   fi
   echo ""
+
+  # ── 门禁卫生检查 ──
+  # 提取 gate.sh 中定义的所有规则 ID，与 violation log 中实际触发过的规则 ID 对比，
+  # 找出从未触发的规则，建议审查是否仍有价值。
+  # 注意："从未触发"不等于"没用"——规则的存在本身可能起威慑作用。
+  local gate_script="$ROOT_DIR/scripts/test-governance-gate.sh"
+  if [ -f "$gate_script" ]; then
+    echo -e "${CYAN}── 门禁卫生检查 ──${NC}"
+
+    # 提取 gate.sh 中 log_violation 调用的规则 ID（去重）
+    local defined_rules
+    defined_rules=$(grep -oE 'log_violation "[^"]+' "$gate_script" \
+      | sed 's/log_violation "//' | sort -u)
+
+    if [ -z "$defined_rules" ]; then
+      echo "  未找到已定义的规则，跳过"
+    else
+      local defined_count
+      defined_count=$(echo "$defined_rules" | wc -l | tr -d ' ')
+
+      # 提取 violation log 中实际触发过的规则 ID（去重）
+      local triggered_rules=""
+      if [ -f "$VIOLATION_LOG" ]; then
+        triggered_rules=$(awk -F ' \\| ' 'NF>=5 {gsub(/^ +| +$/, "", $2); print $2}' "$VIOLATION_LOG" \
+          | sort -u)
+      fi
+
+      # 找出从未触发的规则
+      local never_triggered
+      never_triggered=$(comm -23 <(echo "$defined_rules") <(echo "$triggered_rules"))
+      local never_count=0
+      if [ -n "$never_triggered" ]; then
+        never_count=$(echo "$never_triggered" | wc -l | tr -d ' ')
+      fi
+
+      echo "  已定义规则：$defined_count 条，从未触发：$never_count 条"
+
+      if [ "$never_count" -gt 0 ]; then
+        echo ""
+        echo "  从未触发的规则（建议审查是否仍有价值）："
+        echo "$never_triggered" | while read -r rule; do
+          [ -z "$rule" ] && continue
+          echo -e "    ${YELLOW}$rule${NC}"
+        done
+        echo ""
+        echo "  提示：从未触发可能意味着规则有效地起了威慑作用，也可能意味着规则已过时。"
+        echo "  建议：grep 确认对应的代码模式是否仍存在，再决定是否清理。"
+      else
+        echo "  所有规则均有触发记录，门禁无冗余。"
+      fi
+    fi
+    echo ""
+  fi
 }
 
 # ==================== 通用规则（所有项目适用） ====================
