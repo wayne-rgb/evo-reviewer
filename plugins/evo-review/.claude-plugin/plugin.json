@@ -1,7 +1,7 @@
 {
   "name": "evo-review",
-  "version": "0.4.6",
-  "description": "自进化测试框架 — 涵盖测试原则（铁律+6维度）、测试执行（post-push CI）、测试优化（review+红绿验证+门禁进化），首次 /review 自动 bootstrap 全套测试体系",
+  "version": "0.5.0",
+  "description": "自进化测试框架 — 红绿验证对抗幻觉 + 门禁自动进化。/review 扫描→验证→基础设施三阶段，/ci 自动 CI，/test-check 维度评估",
   "author": {
     "name": "Wayne"
   }

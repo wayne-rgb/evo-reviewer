@@ -5,143 +5,83 @@ allowed-tools: Read, Glob, Grep, Bash(*), Write, Edit, Agent
 
 # /review — 自动测试体系强化
 
-review 的核心产出是**测试基础设施**，不是 bug 修复。
-找到的 bug 只是信号，用来发现测试体系的盲区 → 补基础设施让同类 bug 以后被自动抓住。
-
-参考文档（自动加载）：
-- 语言适配与扫描特征：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/language-adapters.md
-- 测试维度定义：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/dimensions.md
-- 测试运行策略：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/testing-strategy.md
-- gate 骨架模板：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/gate-template.sh
+核心产出是**测试基础设施**，不是 bug 修复。bug 是信号 → 发现测试盲区 → 补基础设施。
 
 ## 输入
 
 $ARGUMENTS — 可选：
-- `/review` — 最近 5 个 commit 涉及的模块
-- `/review macbook-agent/src/task/` — 指定目录（可指定多个）
-- `/review --deep` 或 `/deep` — 全模块循环强化模式（独立命令，详见 `/deep`）
+- `/review` — 近 5 次 commit 涉及的模块
+- `/review dir/` — 指定目录
+- `/review *` — 全模块扫描
 
-## 前置
+## 前置（每次执行）
 
-@${CLAUDE_PLUGIN_ROOT}/skills/review/references/bootstrap.md
+1. 如果没有 `test-governance/` → 执行 bootstrap（@${CLAUDE_PLUGIN_ROOT}/skills/review/references/bootstrap.md）
+2. `bash scripts/test-governance-gate.sh preflight 2>&1 | tail -20`
+3. `bash scripts/test-governance-gate.sh trend 2>&1 | tail -30`
+4. 确定扫描范围：无参数用 `git diff --name-only HEAD~5`，`*` 扫全模块
 
-## 正式流程（普通模式）
+## 阶段 1：扫描
 
-### 第一步：分析
+按模块拆 Explore agent 并行。每个 agent 的 prompt：
+- 加载 @${CLAUDE_PLUGIN_ROOT}/skills/review/references/language-adapters.md（含排除规则）
+- 扫描五类模式：A 资源泄漏 / B 标记锁 / C 错误吞没 / D 并发安全 / E 安全边界
+- 全模块模式（`*`）额外关注：架构问题、状态机非法转换、跨端一致性、测试体系盲区
+- **每模块最多 8 个发现**，按严重程度排序
+- 每个发现必须含：文件:行号、代码证据、为什么这不是语言运行时的正常行为
 
-用 Explore agent 扫描（多模块并行，每个 agent 只传该语言的扫描特征）：
-- A 资源泄漏 / B 标记锁 / C 错误吞没 / D 并发安全 / E 安全边界
+趋势热点文件优先分析。
 
-**对每个发现，核心问题不是"怎么修这个 bug"，而是：**
-1. 现有测试为什么没抓住？
-2. 需要什么基础设施来**自动抓住这一类** bug？
+→ 主会话汇总去重，输出确认清单（按测试体系缺口组织），等用户确认。
 
-### 第二步：输出确认清单
+## 阶段 2：验证+修复（用户确认后）
 
-按**测试体系缺口**组织（不是按 bug 组织）：
-```
-## 模块：xxx（语言）
+按模块拆 opus worktree agent 并行（不同语言不混）。
 
-### 盲区 1：xxx（N 个同类问题）
-- 缺口：没有检测...的机制
-- 基础设施方案：在哪个文件加什么
-- 佐证 bug：列出发现的具体 bug（修 bug 是附带的，基础设施才是目的）
-```
+每个 bug：
+1. 读源码确认 → 写测试复现(红) → 写 fix(绿)
+2. 测试直接通过 = 幻觉，撤销测试和修复，不要修改测试强行失败
+3. 全部完成后统一跑 1 次 lint + 单元测试，确认无回归
+4. commit 在 worktree 内，不合并不 push
 
-末尾固定：**"以上 N 个盲区，确认后我直接开 subagent 执行。有要增删的吗？"**
+**判定规则：**
+- 红绿通过 + 无回归 → ✅
+- 测试直接通过 → ❌ 幻觉，撤销
+- fix 后测试仍失败 → 重写或丢弃
+- 已有测试回归 → 修复回归或丢弃
+- 环境限制无法测试 → ⚠️ 标注原因
 
-暂停，等用户确认。
+**bug 验证策略：**
+- 行为错误类 → 标准红绿
+- 缺失机制类 → 写预期行为测试 → 红（不存在）→ 实现 → 绿
+- 编译级 bug → 编译失败→通过作为红绿
 
-### 第三步：用户确认后，立即开 subagent 执行
+**worktree 硬约束：**
+- tool uses ≤ 50，超过立即停止汇报
+- **禁止在 worktree 内跑 preflight / gate.sh**
+- 修复项 ≤ 5/agent，超出拆第二个
 
-**不再追问。** 多模块按模块拆 subagent 并行（不同语言不混）。
+→ 主会话输出验证报告，等用户确认合并。
+→ 用户确认后：合并 worktree + push + 清理 worktree → 阶段 3。
 
-subagent 的工作分三阶段：
+## 阶段 3：基础设施更新（主会话直接做，不开 subagent）
 
-#### 阶段 A：红绿验证 + 修复（按模块拆 opus worktree agent 并行）
+1. gate.sh 新增 WARN 规则（覆盖本轮 bug 模式），一次性写完再跑 preflight
+2. 更新 infrastructure.md + dimension-coverage.yaml
+3. 跑 1 次 trend，≥10 次高频规则检查 coding-guidelines.md 是否有对应指导
+4. commit + push
 
-**每个发现必须经过红绿验证，对抗幻觉。**
+## 效率约束
 
-对确认清单中的每个 bug，subagent 按顺序执行：
-1. **读源码确认** — bug 是否存在
-2. **写测试精确复现** → 运行 → 必须失败（红）
-3. **写 fix** → 运行测试 → 必须通过（绿）
-4. **所有发现处理完后**，统一跑 1 次该模块 lint + 已有测试 → 必须无回归（**lint 不能跳过**，lint error 会破坏 CI。不要每个 bug 单独跑回归）
-5. 新测试的维度覆盖登记到 `test-governance/dimension-coverage.yaml`
+@${CLAUDE_PLUGIN_ROOT}/skills/review/references/efficiency.md
 
-**判定规则（无中间态）：**
-- 红绿都通过 + 无回归 → ✅ 已验证，保留修复
-- 步骤 2 测试直接通过（bug 不存在）→ ❌ 幻觉，撤销测试和修复
-- 步骤 2 失败但原因与声称 bug 不符 → ❌ 幻觉，撤销
-- 步骤 3 fix 后测试仍失败 → fix 有误，重写 fix 或丢弃
-- 步骤 4 已有测试回归 → fix 引入新问题，必须修复回归或丢弃该发现
-- 环境限制无法运行测试 → ⚠️ 未验证，标注原因
-- **编译级 bug**（如缺少 @MainActor、类型签名错误等无法用运行时测试复现的问题）→ 允许用"编译失败→编译通过"作为红绿判定，标记为 ⚠️ 未验证
+## 报告模板
 
-**bug 分类与验证策略：**
-- **行为错误类**（现有代码输出/状态不符预期）→ 标准红绿：写测试复现错误行为 → 红 → 修 fix → 绿
-- **缺失机制类**（某机制不存在，如缺缓存、缺取消句柄、缺清理逻辑）→ 行为回归测试：写测试描述修复后的预期行为（如"缓存命中时不读磁盘"）→ 红（API 不存在导致编译失败，或旧行为不符预期导致运行时失败，都算合法的"红"）→ 实现机制 → 绿
-- **编译级 bug**（类型/修饰符缺失）→ 编译失败→编译通过作为红绿判定
-
-全部完成后：在 worktree 内 commit（只包含 ✅ 和 ⚠️ 的修复，❌ 的全部撤销）。
-⚠️ 不合并到 main，不 push。worktree 分支保留，等用户确认后由主会话合并+push。
-
-**幻觉发现（❌）不出现在最终报告的修复列表中，但在报告末尾单独列出供参考。**
-
-#### 阶段 B：输出验证报告 + 等待用户确认合并
-
-阶段 A worktree 完成后，主会话汇总验证结果：
-
-```
-## 验证结果
-
-| # | 标记 | 模块 | bug | 修复 |
-
-### 建议写入 CLAUDE.md 的架构约束（如有）
-| # | 约束（一句话） | 来源 bug | 详情 |
-
-### 幻觉记录（❌）
-| # | 声称的 bug | 实际情况 |
-```
-
-末尾固定：**"以上 N 个 ✅ 已验证修复在 worktree 分支中，确认后我合并到 main 并 push。"**
-
-暂停，等用户确认。
-
-用户确认后：
-1. 合并已确认的 worktree 分支到 main + push
-2. 清理 worktree
-3. 执行阶段 C 更新测试基础设施
-
-#### 阶段 C：更新测试基础设施（合并到 main 后执行）
-
-**Phase C 直接在 main 上执行，不使用 worktree。** 改动内容是 gate 脚本和 test-governance 文档，不涉及业务代码，无需隔离。
-
-@${CLAUDE_PLUGIN_ROOT}/skills/review/references/phase-b.md
-
-## --deep 模式
-
-已独立为 `/deep` 命令。`/review --deep` 仍可用，等价于调用 `/deep`。
-
-### 出报告前自检（强制，不可跳过）
-
-在输出最终报告之前，逐项检查以下清单。任何未完成项必须补完后才能出报告：
-
-- [ ] 阶段 A：所有 ✅ bug 已通过红绿验证 + 已在 worktree commit
-- [ ] 阶段 B：验证报告已输出，用户已确认，worktree 已合并 + push
-- [ ] 阶段 C / B-1 subagent：gate 新增规则已写入 + preflight 通过 + test helper 已创建 + 跨模块约束已检查
-- [ ] 阶段 C / B-2 subagent：test-governance/ 文档已更新 + trend 已执行 + 高频规则已检查 + top 1 存量已清理 + 卫生检查已完成
-- [ ] 所有改动已 commit + push
-
-最终报告：
 ```
 ## Review 报告
 
 ### 测试体系强化
-| 模块 | 新增基础设施 | 能自动抓住的问题类型 | 验证结果 |
-
-### 基础设施更新（Phase B）
-| 类型 | 新增项 | 说明 |
+| 模块 | 新增基础设施 | 能自动抓住的问题类型 |
 
 ### 附带修复的 bug
 | # | 标记 | 模块 | bug | 修复 |
@@ -149,24 +89,6 @@ subagent 的工作分三阶段：
 ### 验证统计
 | 发现数 | ✅ 已验证 | ❌ 幻觉 | ⚠️ 未验证 |
 
-### 架构约束建议（如有）
-| # | 约束 | 来源 |
-
 ### 幻觉记录
 | # | 声称的 bug | 实际情况 |
 ```
-
-## 效率约束
-
-@${CLAUDE_PLUGIN_ROOT}/skills/review/references/efficiency.md
-
-### subagent 模型分配（必须遵守）
-
-| 阶段 | agent 类型 | model 参数 | 理由 |
-|------|-----------|-----------|------|
-| 分析 | Explore agent | `model: "sonnet"` | 代码扫描是机械性工作，sonnet 快 3-4 倍 |
-| 阶段 A 红绿验证+修复 | worktree agent | `model: "opus"` | 判断 bug 真实性需要准确性 |
-| Phase B-1 gate 规则 | 普通 agent（直接在 main） | `model: "opus"` | 写 gate 规则 + 1 次 preflight + commit |
-| Phase B-2 文档+治理 | 普通 agent（直接在 main） | `model: "opus"` | B-1 完成后串行：更新文档 + 趋势 + 存量清理 + commit |
-
-主会话保持 opus 做决策、去重、合并 worktree。

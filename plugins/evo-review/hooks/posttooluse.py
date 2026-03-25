@@ -198,7 +198,13 @@ def main():
         lines.append(f"{i}. [{v['id']}] {v['message']}")
     lines.append("\n请修复后继续。如果是有意为之，请标注原因。")
 
-    result = {"systemMessage": "\n".join(lines)}
+    # PostToolUse hook 必须用 hookSpecificOutput.additionalContext 注入 Claude 上下文
+    result = {
+        "hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": "\n".join(lines),
+        }
+    }
     print(json.dumps(result, ensure_ascii=False))
     sys.exit(0)
 

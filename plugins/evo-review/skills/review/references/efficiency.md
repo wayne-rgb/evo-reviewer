@@ -1,10 +1,23 @@
 # 效率约束
 
-- 分析用 Explore agent 并行，不在主会话逐文件读
-- subagent 只跑单文件测试，不跑全量
-- Bash 输出 `| tail -N` 截断
-- 单个 subagent 修复项 ≤ 5
-- 某模块确认 bug > 5 时：按 HIGH→MEDIUM→LOW 排序，前 5 项进入第一个 R3 agent，剩余拆第二个 R3 agent（同样 ≤ 5）。如总数 > 10，超出部分列入报告的"确认但本轮未修复"栏
-- 不同语言拆不同 subagent
-- worktree 合并后立即清理，不留残余
-- Phase B 的 preflight 最多跑 1 次（所有规则写完后统一验证），禁止逐条验证
+## 扫描阶段
+- 按模块拆 Explore agent 并行，不在主会话逐文件读
+- 每模块最多 8 个发现，按严重程度排序
+
+## worktree 验证阶段
+- tool uses ≤ 50/agent，超过立即停止汇报
+- **禁止在 worktree 内跑 preflight / gate.sh** — 回 main 后由主会话跑
+- 修复项 ≤ 5/agent，超出拆第二个（同样 ≤ 5）
+- 不同语言拆不同 agent
+- lint + 单元测试在所有修复完成后统一跑 1 次，不要每个 bug 单独跑
+- worktree 合并后立即清理
+
+## 基础设施更新阶段
+- 主会话直接做，不开 subagent
+- gate 规则一次性写完再跑 preflight（最多 2 次）
+- trend 只跑 1 次
+
+## 通用
+- Bash 输出 `| tail -N` 截断（默认 20 行）
+- 长命令（>2min）交 subagent 后台，主会话只收摘要
+- 失败先分析原因，不盲目重试
