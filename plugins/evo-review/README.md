@@ -7,7 +7,7 @@
 | 层级 | 能力 | 触发 |
 |------|------|------|
 | **执行层** `/ci` | git push 后自动 CI 验证 | PostToolUse hook 自动 |
-| **优化层** `/review` | 代码审查 + 红绿验证 + 基础设施进化 | 手动 |
+| **优化层** `/review` | 跨模块业务流审查 + 红绿验证 + 基础设施进化 | 手动 |
 | **检查层** `/test-check` | 测试维度覆盖质量评估 | 手动 |
 
 ## 核心特色
@@ -16,11 +16,12 @@
 2. **产出是测试基础设施** — bug 是信号，目的是让同类 bug 以后被自动抓住
 3. **门禁自动进化** — 违规日志 → 趋势分析 → 高频规则 → 编码规范 → 源头治理
 4. **Hook 机械执行** — posttooluse hook 在每次编辑后自动检查违规
+5. **业务流驱动** — 从 P0 场景和通信拓扑推导受影响的端到端业务流，在模块交界处检查契约一致性
 
 ## 使用
 
 ```bash
-/review                    # 审查近 5 次 commit 涉及的模块
+/review                    # 审查近 5 次 commit 涉及的业务流
 /review src/task/          # 审查指定目录
 /review *                  # 全模块扫描
 /test-check path/to/test   # 检查测试维度覆盖
@@ -31,7 +32,7 @@
 ## /review 流程（3 阶段）
 
 ```
-阶段 1：扫描（Explore agent 并行）→ 确认清单 → 用户确认
+阶段 1：业务流追踪（Explore agent 并行）→ 确认清单 → 用户确认
     ↓
 阶段 2：验证+修复（worktree agent）→ 验证报告 → 用户确认合并
     ↓
@@ -60,7 +61,7 @@ evo-review/
 │   │       ├── bootstrap.md        # 首次 bootstrap 流程
 │   │       ├── phase-b.md          # 阶段 3 基础设施更新
 │   │       ├── efficiency.md       # 效率约束
-│   │       ├── language-adapters.md # 扫描指南 + 排除规则
+│   │       ├── flow-tracing.md     # 业务流追踪指南 + 排除规则
 │   │       ├── dimensions.md       # 6 维度定义
 │   │       ├── testing-strategy.md # 测试运行策略
 │   │       └── gate-template.sh    # 门禁骨架模板

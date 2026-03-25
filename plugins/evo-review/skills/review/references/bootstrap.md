@@ -35,9 +35,30 @@ modules:
 4. 检查 .gitignore 是否包含 `test-governance/gate-violations.log`。
 
 5. **跨模块通信拓扑扫描**（多模块项目自动执行，单模块跳过）：
-   - 搜索通信模式（WebSocket、HTTP、gRPC 等），识别模块间通信关系
-   - 识别共享类型定义和状态机
-   - 写入 config.yaml 的 `cross_module` 段，在 gate.sh 生成初始跨模块规则
+   - 读取项目 CLAUDE.md 的通信拓扑描述（搜索 ASCII 图、"通信"/"拓扑"/"架构"关键词）
+   - 搜索通信模式（WebSocket、HTTP、gRPC、消息队列等），识别模块间通信关系
+   - 识别共享类型定义文件（搜索 types/、models/、Message、Codable 等关键词）
+   - 识别状态机定义文件（搜索 state-machine、StateMachine、状态转换等）
+   - 如果存在 `test-governance/p0-cases.tsv`，读取并按功能域聚合为初始业务流
+   - 写入 config.yaml 的 `cross_module` 段：
+     ```yaml
+     cross_module:
+       topology_source: "CLAUDE.md 通信拓扑段"
+       shared_types:
+         - path/to/types/index.ts
+         - path/to/Message.swift
+       state_machines:
+         - path/to/state-machine.ts
+         - path/to/TaskViewModel.swift
+       communication_pairs:
+         - { from: "module-a", to: "module-b", protocol: "WebSocket", port: 8765 }
+         - { from: "module-c", to: "module-b", protocol: "HTTP", port: 13284 }
+       business_flows:
+         - name: "端到端业务流名称"
+           modules: [module-a, module-b, module-c]
+           p0_cases: [CASE_ID_1, CASE_ID_2]
+     ```
+   - 在 gate.sh 生成初始跨模块规则
 
 Bootstrap 产物纳入确认清单，和 review 发现一起确认。
 

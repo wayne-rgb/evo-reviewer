@@ -4,7 +4,7 @@
 
 ## 步骤
 
-1. **gate 规则**：在 gate.sh 新增 WARN 级规则，覆盖本轮 bug 的共性模式。一次性写完。
+1. **gate 规则**：在 gate.sh 新增 WARN 级规则。优先新增跨模块契约检查规则（枚举一致性、消息字段覆盖、状态机同步），其次覆盖单模块代码模式。一次性写完。
 2. **preflight**：`bash scripts/test-governance-gate.sh preflight 2>&1 | tail -20`，BLOCK 失败则修正（最多 2 次）
 3. **文档更新**：
    - infrastructure.md：新增 gate 规则 + 回归测试条目
