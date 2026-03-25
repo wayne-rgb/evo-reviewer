@@ -57,7 +57,7 @@ $ARGUMENTS — 可选：
 - 缺失机制类 → 写预期行为测试 → 红（不存在）→ 实现 → 绿
 - 编译级 bug → 编译失败→通过作为红绿
 
-**worktree 硬约束（见 [efficiency.md](references/efficiency.md)）：**
+**worktree 硬约束：**
 - tool uses ≤ 50，超过立即停止汇报
 - **禁止在 worktree 内跑 preflight / gate.sh**
 - 修复项 ≤ 5/agent，超出拆第二个
@@ -68,6 +68,10 @@ $ARGUMENTS — 可选：
 ## 阶段 3：基础设施更新（主会话直接做，不开 subagent）
 
 见 [phase-b.md](references/phase-b.md)
+
+## 效率约束
+
+完整约束见 [efficiency.md](references/efficiency.md)
 
 ## 报告模板
 

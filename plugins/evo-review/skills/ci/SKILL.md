@@ -1,7 +1,6 @@
 ---
 name: ci
 description: CI 验证 — git push 后自动执行。读取 test-governance/config.yaml 确定模块，按改动范围选择测试粒度，subagent 后台执行不阻塞对话。
-disable-model-invocation: true
 allowed-tools: [Read, Glob, Grep, Bash, Agent]
 ---
 
@@ -83,4 +82,4 @@ bash scripts/test-governance-gate.sh preflight | tail -20
 
 ## 参考
 
-详细的 config.yaml 格式和模块测试命令配置见 `references/ci-procedure.md`。
+详细的 config.yaml 格式和模块测试命令配置见 [ci-procedure.md](references/ci-procedure.md)。
