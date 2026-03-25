@@ -4,12 +4,18 @@ set -euo pipefail
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
-# 只匹配 git push 命令
-[[ "$COMMAND" == *"git push"* ]] || exit 0
+# 精确匹配 git push 命令（排除 dry-run、delete、echo 等）
+# 必须以 git push 开头或在 && / ; 后跟 git push
+if ! echo "$COMMAND" | grep -qE '(^|&&\s*|;\s*)git\s+push(\s|$)'; then
+  exit 0
+fi
+
+# 排除 dry-run 和 delete
+if echo "$COMMAND" | grep -qE 'git\s+push\s+.*--(dry-run|delete)'; then
+  exit 0
+fi
 
 # PostToolUse 本身就保证了工具成功执行，无需额外检查 exit_code
-# PostToolUse hook 必须用 hookSpecificOutput.additionalContext 才能注入 Claude 上下文
-# 纯文本和顶层 systemMessage 在 PostToolUse 中会被忽略
 cat <<'EOF'
 {
   "hookSpecificOutput": {

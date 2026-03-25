@@ -114,22 +114,26 @@ def load_project_rules(ext: str) -> list:
 def check_file(file_path: str, content: str, rules: list) -> list:
     """对文件内容执行规则检查，返回违规列表。"""
     violations = []
+    lines = content.split("\n")
+
     for rule in rules:
         pattern = rule.get("pattern", "")
         negative_pattern = rule.get("negative_pattern", "")
 
-        # 检查主 pattern 是否在文件中匹配
+        # 统计匹配和保护的数量
         try:
-            if not re.search(pattern, content, re.DOTALL):
+            match_count = len(re.findall(pattern, content, re.DOTALL))
+            if match_count == 0:
                 continue
         except re.error:
             continue
 
-        # 如果有 negative_pattern，检查它是否也存在于文件中（粗略的整文件检查）
+        # 如果有 negative_pattern，统计保护的数量
         if negative_pattern:
             try:
-                if re.search(negative_pattern, content, re.DOTALL):
-                    # 找到了 negative_pattern，说明可能已经有保护，跳过此规则
+                protected_count = len(re.findall(negative_pattern, content, re.DOTALL))
+                # 只有当所有匹配都有保护时才跳过
+                if protected_count >= match_count:
                     continue
             except re.error:
                 pass
