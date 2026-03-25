@@ -1,12 +1,12 @@
 ---
 name: review
-description: 自进化代码审查：红绿验证对抗幻觉 + 门禁自动进化。/review 扫描近 5 次 commit，/review dir/ 指定目录，/review * 全模块扫描。
+description: 跨模块业务流审查：追踪端到端业务流，在模块交界处找真实 bug。红绿验证对抗幻觉 + 门禁自动进化。
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Agent
 ---
 
 # /review — 跨模块业务流审查
 
-核心产出是**用户真正会碰到的跨模块问题**，不是代码味道。bug 藏在模块交界处，不在单文件里。
+核心产出是**用户真正会碰到的问题**。优先查跨模块交界处的契约断裂，同时沿业务流路径扫描单模块内的可感知 bug。
 
 业务流追踪指南：[flow-tracing.md](${CLAUDE_PLUGIN_ROOT}/skills/review/references/flow-tracing.md)
 
@@ -28,11 +28,14 @@ $ARGUMENTS — 可选：
 
 ### 1a. 推导受影响业务流（主会话，不开 agent）
 
-读取以下信号源推导需要检查的端到端业务流：
-1. **通信拓扑**：读项目 CLAUDE.md 中的通信拓扑图 + `test-governance/config.yaml` 的 `cross_module` 段
-2. **P0 场景**：读 `test-governance/p0-cases.tsv`（如果存在），按功能域聚合为业务流
-3. **近期变更**：`git log --oneline -10` + `git diff --name-only HEAD~5`，确定哪些模块/交界被改动
-4. **共享类型**：搜索类型定义文件（types/index.ts、Message.swift 等），识别模块间的消息契约
+从 `test-governance/config.yaml` 的 `cross_module.business_flows` 读取已定义的业务流，结合近期变更筛选受影响的子集：
+1. **已定义业务流**：读 `config.yaml` 的 `cross_module.business_flows`（bootstrap 时生成）
+2. **近期变更**：`git diff --name-only HEAD~5`，确定哪些模块/交界被改动
+3. **筛选**：改动涉及的模块 ∩ 业务流涉及的模块 → 受影响的业务流
+4. **补充**：如果改动了 `cross_module.shared_types` 中的文件 → 所有消费该类型的业务流也加入
+5. **`/review dir/` 模式**：找所有经过该目录所属模块的业务流
+
+如果 `config.yaml` 无 `cross_module` 段（未 bootstrap 或单模块），先从 CLAUDE.md 通信拓扑 + `p0-cases.tsv` 推导。
 
 输出：受影响的业务流清单（**3-6 条**），每条包含：
 - 流名称（如"iOS 审批任务 → togo-agent 状态转换 → Bot 通知"）
@@ -64,7 +67,7 @@ A-E 发现的**过滤条件**：必须能描述出用户可感知的影响（如
 **约束**：
 - **每条业务流最多 6 个发现**（F1-F4 + A-E 合计），按用户影响严重度排序
 - F1-F4 优先于 A-E（同等严重度下，交界问题排前面）
-- 每个发现必须含：文件:行号（交界问题需 2+ 个文件）、代码证据、**用户可感知的影响**
+- 每个发现必须含：文件:行号、代码证据、**用户可感知的影响**（F1-F4 需标注交界两侧文件）
 - 没有用户可感知影响的发现不要报
 - 趋势热点文件优先分析
 

@@ -1,7 +1,7 @@
 {
   "name": "evo-review",
-  "version": "0.5.2",
-  "description": "自进化测试框架 — 红绿验证对抗幻觉 + 门禁自动进化。/review 扫描→验证→基础设施三阶段，/ci 自动 CI，/test-check 维度评估",
+  "version": "0.6.0",
+  "description": "自进化测试框架 — 跨模块业务流审查 + 红绿验证 + 门禁自动进化。/review 业务流追踪→验证→基础设施，/ci 自动 CI，/test-check 维度评估",
   "author": {
     "name": "Wayne"
   }

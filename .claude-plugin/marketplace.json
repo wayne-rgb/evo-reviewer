@@ -1,15 +1,15 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "evo-reviewer",
-  "description": "自进化测试框架 — review + 红绿验证 + 门禁进化",
+  "description": "自进化测试框架 — 跨模块业务流审查 + 红绿验证 + 门禁进化",
   "owner": {
     "name": "Wayne"
   },
   "plugins": [
     {
       "name": "evo-review",
-      "description": "自进化测试框架 — 涵盖测试原则（铁律+6维度）、测试执行（post-push CI）、测试优化（review+红绿验证+门禁进化），首次 /review 自动 bootstrap 全套测试体系",
-      "version": "0.5.1",
+      "description": "自进化测试框架 — 跨模块业务流审查 + 红绿验证 + 门禁自动进化，首次 /review 自动 bootstrap 全套测试体系",
+      "version": "0.6.0",
       "author": {
         "name": "Wayne"
       },
