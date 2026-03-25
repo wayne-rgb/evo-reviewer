@@ -1,13 +1,14 @@
 ---
-description: 自进化代码审查：红绿验证对抗幻觉 + 门禁自动进化
-allowed-tools: Read, Glob, Grep, Bash(*), Write, Edit, Agent
+name: review
+description: 自进化代码审查：红绿验证对抗幻觉 + 门禁自动进化。/review 扫描近 5 次 commit，/review dir/ 指定目录，/review * 全模块扫描。
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Agent
 ---
 
 # /review — 自动测试体系强化
 
 核心产出是**测试基础设施**，不是 bug 修复。bug 是信号 → 发现测试盲区 → 补基础设施。
 
-扫描指南：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/language-adapters.md
+扫描指南（含排除规则）：[language-adapters.md](references/language-adapters.md)
 
 ## 输入
 
@@ -18,7 +19,7 @@ $ARGUMENTS — 可选：
 
 ## 前置（每次执行）
 
-1. 如果没有 `test-governance/` → 读取 `${CLAUDE_PLUGIN_ROOT}/skills/review/references/bootstrap.md` 并执行 bootstrap
+1. 如果没有 `test-governance/` → 读取 [bootstrap.md](references/bootstrap.md) 并执行 bootstrap
 2. `bash scripts/test-governance-gate.sh preflight 2>&1 | tail -20`
 3. `bash scripts/test-governance-gate.sh trend 2>&1 | tail -30`
 4. 确定扫描范围：无参数用 `git diff --name-only HEAD~5`，`*` 扫全模块
@@ -56,7 +57,7 @@ $ARGUMENTS — 可选：
 - 缺失机制类 → 写预期行为测试 → 红（不存在）→ 实现 → 绿
 - 编译级 bug → 编译失败→通过作为红绿
 
-**worktree 硬约束：**
+**worktree 硬约束（见 [efficiency.md](references/efficiency.md)）：**
 - tool uses ≤ 50，超过立即停止汇报
 - **禁止在 worktree 内跑 preflight / gate.sh**
 - 修复项 ≤ 5/agent，超出拆第二个
@@ -66,11 +67,7 @@ $ARGUMENTS — 可选：
 
 ## 阶段 3：基础设施更新（主会话直接做，不开 subagent）
 
-@${CLAUDE_PLUGIN_ROOT}/skills/review/references/phase-b.md
-
-## 效率约束
-
-@${CLAUDE_PLUGIN_ROOT}/skills/review/references/efficiency.md
+见 [phase-b.md](references/phase-b.md)
 
 ## 报告模板
 

@@ -33,7 +33,7 @@
 ```
 阶段 1：扫描（Explore agent 并行）→ 确认清单 → 用户确认
     ↓
-阶段 2：验证+修复（opus worktree）→ 验证报告 → 用户确认合并
+阶段 2：验证+修复（worktree agent）→ 验证报告 → 用户确认合并
     ↓
 阶段 3：基础设施更新（主会话直接做）→ gate 规则 + 文档 → push
 ```
@@ -44,6 +44,36 @@
 - 创建 `test-governance/` 目录（config.yaml、infrastructure.md 等）
 - 生成 `scripts/test-governance-gate.sh` 门禁脚本
 - 追加测试原则到项目 CLAUDE.md
+
+## 插件结构
+
+```
+evo-review/
+├── .claude-plugin/
+│   └── plugin.json
+├── skills/
+│   ├── review/
+│   │   ├── SKILL.md                # /review 命令
+│   │   └── references/
+│   │       ├── bootstrap.md        # 首次 bootstrap 流程
+│   │       ├── phase-b.md          # 阶段 3 基础设施更新
+│   │       ├── efficiency.md       # 效率约束
+│   │       ├── language-adapters.md # 扫描指南 + 排除规则
+│   │       ├── dimensions.md       # 6 维度定义
+│   │       ├── testing-strategy.md # 测试运行策略
+│   │       └── gate-template.sh    # 门禁骨架模板
+│   ├── test-check/
+│   │   └── SKILL.md                # /test-check 命令
+│   └── ci/
+│       ├── SKILL.md                # /ci（hook 自动触发）
+│       └── references/
+│           └── ci-procedure.md
+├── hooks/
+│   ├── hooks.json
+│   ├── posttooluse.py
+│   └── post-push-signal.sh
+└── README.md
+```
 
 ## 支持语言
 

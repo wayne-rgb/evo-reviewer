@@ -1,13 +1,15 @@
 ---
+name: test-check
 description: 检查测试文件的维度覆盖质量
 allowed-tools: Read, Glob, Grep
+argument-hint: "[test-file-path]"
 ---
 
 # /test-check — 检查测试质量是否达标
 
 快速检查指定测试文件的维度覆盖情况。只读不改。
 
-维度定义：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/dimensions.md
+维度定义：[dimensions.md](../review/references/dimensions.md)
 
 ## 输入
 
