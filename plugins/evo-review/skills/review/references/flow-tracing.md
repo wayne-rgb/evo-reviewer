@@ -2,13 +2,16 @@
 
 ## 业务流推导方法
 
-### 信号源优先级
-1. `test-governance/p0-cases.tsv` — 已定义的 P0 场景，直接对应业务流
-2. 项目 CLAUDE.md 的通信拓扑图 — 模块间连接关系
-3. `git diff --name-only HEAD~5` — 近期改动涉及的交界点
-4. `test-governance/config.yaml` — 模块列表和语言信息
+### 每次 /review 执行时
+1. `test-governance/config.yaml` 的 `cross_module.business_flows` — bootstrap 已预计算的业务流清单
+2. `git diff --name-only HEAD~5` — 近期改动，用于筛选受影响的业务流子集
 
-### 从 P0 场景到业务流
+### Bootstrap 时推导业务流（首次或 config.yaml 无 cross_module 段时）
+1. `test-governance/p0-cases.tsv` — 已定义的 P0 场景，按功能域聚合为业务流
+2. 项目 CLAUDE.md 的通信拓扑图 — 模块间连接关系
+3. `test-governance/config.yaml` — 模块列表和语言信息
+
+### 从 P0 场景到业务流（bootstrap 阶段）
 p0-cases.tsv 每行是一个 P0 场景，格式：`case_id\tkeyword\tsearch_scope`。
 将相关 P0 场景聚合为业务流：
 - 同一功能域的多个 P0 场景 → 1 条业务流
@@ -20,11 +23,11 @@ p0-cases.tsv 每行是一个 P0 场景，格式：`case_id\tkeyword\tsearch_scop
 - HTTP API → 请求/响应格式契约
 - 共享类型文件 → 枚举/状态机契约
 
-### 从近期 commit 到受影响流
+### 从近期 commit 筛选受影响流（每次 review）
 1. `git diff --name-only HEAD~5` 获取改动文件列表
 2. 归属到模块（按 config.yaml 的 src_dir）
-3. 如果改动跨 2+ 模块 → 该交界对应的业务流必须检查
-4. 如果改动了类型定义/消息格式文件 → 所有消费该类型的业务流必须检查
+3. 改动涉及的模块 ∩ 业务流涉及的模块 → 受影响的业务流
+4. 如果改动了 `cross_module.shared_types` 中的文件 → 所有消费该类型的业务流也加入
 
 ---
 

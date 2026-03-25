@@ -23,7 +23,7 @@ $ARGUMENTS — 可选：
 1. 如果没有 `test-governance/` → 读取 [bootstrap.md](${CLAUDE_PLUGIN_ROOT}/skills/review/references/bootstrap.md) 并执行 bootstrap
 2. `bash scripts/test-governance-gate.sh preflight 2>&1 | tail -20`
 3. `bash scripts/test-governance-gate.sh trend 2>&1 | tail -30`
-4. 确定扫描范围：无参数用 `git diff --name-only HEAD~5`，`*` 扫全模块
+4. 确定扫描范围（1a 步骤细化）
 
 ## 阶段 1：业务流追踪
 

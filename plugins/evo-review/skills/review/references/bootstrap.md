@@ -56,6 +56,8 @@ modules:
        business_flows:
          - name: "端到端业务流名称"
            modules: [module-a, module-b, module-c]
+           entry_files: ["module-a/src/handler.ts"]
+           boundary_files: ["module-a/src/types/index.ts", "module-b/Sources/Message.swift"]
            p0_cases: [CASE_ID_1, CASE_ID_2]
      ```
    - 在 gate.sh 生成初始跨模块规则
@@ -64,9 +66,9 @@ Bootstrap 产物纳入确认清单，和 review 发现一起确认。
 
 ## 确定范围
 
-- `/review`（无参数）：`git diff --name-only HEAD~5` 归属到模块
-- `/review dir/`：指定目录
-- `/review *`：全模块
+- `/review`（无参数）：从 config.yaml 的 business_flows 筛选近期改动涉及的业务流
+- `/review dir/`：找所有经过该目录所属模块的业务流
+- `/review *`：全部业务流
 
 ## 就绪检查
 

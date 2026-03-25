@@ -1,7 +1,7 @@
 # 效率约束
 
 ## 业务流推导阶段
-- 在主会话完成（读 CLAUDE.md + p0-cases.tsv + git log，3-5 次 tool use）
+- 在主会话完成（读 config.yaml + git diff，1-3 次 tool use；无 cross_module 时退化为从 CLAUDE.md 推导，3-5 次）
 - 业务流数量 ≤ 6，超出按优先级裁剪（近期改动涉及的 > P0 场景涉及的 > 其余）
 - 单模块项目退化为按模块扫描
 
