@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep, Bash(*), Write, Edit, Agent
 
 核心产出是**测试基础设施**，不是 bug 修复。bug 是信号 → 发现测试盲区 → 补基础设施。
 
+扫描指南：@${CLAUDE_PLUGIN_ROOT}/skills/review/references/language-adapters.md
+
 ## 输入
 
 $ARGUMENTS — 可选：
@@ -16,27 +18,25 @@ $ARGUMENTS — 可选：
 
 ## 前置（每次执行）
 
-1. 如果没有 `test-governance/` → 执行 bootstrap（@${CLAUDE_PLUGIN_ROOT}/skills/review/references/bootstrap.md）
+1. 如果没有 `test-governance/` → 读取 `${CLAUDE_PLUGIN_ROOT}/skills/review/references/bootstrap.md` 并执行 bootstrap
 2. `bash scripts/test-governance-gate.sh preflight 2>&1 | tail -20`
 3. `bash scripts/test-governance-gate.sh trend 2>&1 | tail -30`
 4. 确定扫描范围：无参数用 `git diff --name-only HEAD~5`，`*` 扫全模块
 
 ## 阶段 1：扫描
 
-按模块拆 Explore agent 并行。每个 agent 的 prompt：
-- 加载 @${CLAUDE_PLUGIN_ROOT}/skills/review/references/language-adapters.md（含排除规则）
+按模块拆 Explore agent 并行。每个 agent 的 prompt 必须包含上方已加载的 language-adapters.md 的完整内容（特别是排除规则），加上：
 - 扫描五类模式：A 资源泄漏 / B 标记锁 / C 错误吞没 / D 并发安全 / E 安全边界
 - 全模块模式（`*`）额外关注：架构问题、状态机非法转换、跨端一致性、测试体系盲区
 - **每模块最多 8 个发现**，按严重程度排序
 - 每个发现必须含：文件:行号、代码证据、为什么这不是语言运行时的正常行为
-
-趋势热点文件优先分析。
+- 趋势热点文件优先分析
 
 → 主会话汇总去重，输出确认清单（按测试体系缺口组织），等用户确认。
 
 ## 阶段 2：验证+修复（用户确认后）
 
-按模块拆 opus worktree agent 并行（不同语言不混）。
+按模块拆 worktree agent 并行（不同语言不混）。
 
 每个 bug：
 1. 读源码确认 → 写测试复现(红) → 写 fix(绿)
@@ -66,10 +66,7 @@ $ARGUMENTS — 可选：
 
 ## 阶段 3：基础设施更新（主会话直接做，不开 subagent）
 
-1. gate.sh 新增 WARN 规则（覆盖本轮 bug 模式），一次性写完再跑 preflight
-2. 更新 infrastructure.md + dimension-coverage.yaml
-3. 跑 1 次 trend，≥10 次高频规则检查 coding-guidelines.md 是否有对应指导
-4. commit + push
+@${CLAUDE_PLUGIN_ROOT}/skills/review/references/phase-b.md
 
 ## 效率约束
 

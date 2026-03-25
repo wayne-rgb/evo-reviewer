@@ -25,11 +25,11 @@ modules:
     helper_dir: "src/__tests__/helpers"
 ```
 
-2. 如果没有 `scripts/test-governance-gate.sh`，按 gate 骨架模板生成（@${CLAUDE_PLUGIN_ROOT}/skills/review/references/gate-template.sh）。
+2. 如果没有 `scripts/test-governance-gate.sh`，读取 `${CLAUDE_PLUGIN_ROOT}/skills/review/references/gate-template.sh` 按骨架模板生成。
 
 3. 追加测试原则到项目 CLAUDE.md（如果尚未包含）：
-   - 测试运行策略（@${CLAUDE_PLUGIN_ROOT}/skills/review/references/testing-strategy.md）
-   - 6 维度定义（@${CLAUDE_PLUGIN_ROOT}/skills/review/references/dimensions.md）
+   - 测试运行策略（读取 `${CLAUDE_PLUGIN_ROOT}/skills/review/references/testing-strategy.md`）
+   - 6 维度定义（读取 `${CLAUDE_PLUGIN_ROOT}/skills/review/references/dimensions.md`）
    - CI 策略说明
 
 4. 检查 .gitignore 是否包含 `test-governance/gate-violations.log`。
