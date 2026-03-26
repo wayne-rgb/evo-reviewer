@@ -79,6 +79,8 @@ p0-cases.tsv 每行是一个 P0 场景，格式：`case_id\tkeyword\tsearch_scop
 
 追踪业务流时，流经每个模块的代码路径上顺带检查以下模式。**过滤条件**：必须能描述出用户可感知的影响，纯理论风险不报。
 
+**行号锚定规则**：所有发现（包括缺失类）都必须给出精确的 `文件:行号`。缺失类 bug（缺少 timeout、缺少字段校验、缺少错误处理等）的行号指向**应该添加代码的位置**，如 `src/ws/server.ts:142 — ws.send() 此处缺少 timeout 机制`。无法定位到具体行号的发现直接丢弃。
+
 ### A — 资源泄漏
 timer/interval/listener/fd/goroutine 被创建后未清理。
 
