@@ -15,6 +15,11 @@ if echo "$COMMAND" | grep -qE 'git\s+push\s+.*--(dry-run|delete)'; then
   exit 0
 fi
 
+# 排除 CI 自动修复的 push（commit message 含 [ci-fix]），防止无限循环
+if echo "$COMMAND" | grep -qE '\[ci-fix\]'; then
+  exit 0
+fi
+
 # PostToolUse 本身就保证了工具成功执行，无需额外检查 exit_code
 cat <<'EOF'
 {

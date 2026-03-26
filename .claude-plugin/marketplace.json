@@ -9,7 +9,7 @@
     {
       "name": "evo-review",
       "description": "自进化测试框架 — 跨模块业务流审查 + 红绿验证 + 门禁自动进化，首次 /review 自动 bootstrap 全套测试体系",
-      "version": "0.6.1",
+      "version": "0.6.2",
       "author": {
         "name": "Wayne"
       },

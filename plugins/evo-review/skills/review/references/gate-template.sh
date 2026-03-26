@@ -214,16 +214,25 @@ show_trend() {
 
 check_license_files() {
   echo "🔍 检查第三方许可文件..."
-  local missing=0
-  for f in LICENSE NOTICE THIRD_PARTY_NOTICES.md; do
+  local block=0
+
+  # LICENSE 是必需的（BLOCK）
+  if [ ! -f "$ROOT_DIR/LICENSE" ]; then
+    warn "缺少必需文件：LICENSE"
+    log_violation "R-license-missing" "BLOCK" "LICENSE" "许可文件 LICENSE 不存在"
+    block=1
+  fi
+
+  # NOTICE 和 THIRD_PARTY_NOTICES.md 建议有但不阻塞（WARN）
+  for f in NOTICE THIRD_PARTY_NOTICES.md; do
     if [ ! -f "$ROOT_DIR/$f" ]; then
-      warn "缺少必需文件：$f"
-      log_violation "R-license-missing" "BLOCK" "$f" "许可文件 $f 不存在"
-      missing=1
+      warn "建议补充文件：$f"
+      log_violation "R-license-optional" "WARN" "$f" "许可文件 $f 不存在（建议补充）"
     fi
   done
-  if [ "$missing" -ne 0 ]; then
-    fail "缺少第三方许可文件，请补充"
+
+  if [ "$block" -ne 0 ]; then
+    fail "缺少 LICENSE 文件，请补充"
     return 1
   fi
   echo "  ✅ 第三方许可文件检查完成"

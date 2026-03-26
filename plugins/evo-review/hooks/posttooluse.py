@@ -28,7 +28,7 @@ ts_rules = [
     {
         "id": "callback-unprotected",
         "pattern": r"this\.\w+Callback\s*\(",
-        "negative_pattern": r"try\s*\{[^}]*this\.\w+Callback",
+        "negative_pattern": r"try\s*\{[\s\S]*?this\.\w+Callback",
         "message": "this.xxxCallback() 调用应包裹在 try-catch 中，防止回调异常中断主流程",
     },
     {

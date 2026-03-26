@@ -93,14 +93,14 @@ modules:
 1. 获取改动文件列表
 2. 对每个文件，匹配 config.yaml 中模块的 src_dir 前缀，归属到模块
 3. 无法归属的文件（根目录配置等）不触发模块测试，只跑治理门禁
-4. 纯文档/配置改动（所有文件扩展名为 .md/.yaml/.json/.toml/.txt/.cfg）→ 只跑门禁
+4. 纯文档/配置改动 → 只跑门禁。白名单：`*.md`, `README*`, `LICENSE*`, `CHANGELOG*`, `*.txt`, `*.cfg`, `test-governance/*.yaml`, `test-governance/*.md`。不在白名单内的 `.json`/`.yaml`/`.toml` 按模块归属正常处理（如 `package.json`、`tsconfig.json` 等可能影响编译和依赖）
 
 ## 失败处理策略
 
 | 失败类型 | 处理方式 |
 |----------|----------|
 | 门禁失败 | 汇报具体违规项，不自动修复 |
-| lint 失败 | 如果是自动可修复的（--fix），自动修复 + commit + push |
+| lint 失败 | 如果是自动可修复的（--fix），自动修复 + commit（message 含 `[ci-fix]`）+ push |
 | 类型检查失败 | 汇报错误位置和原因 |
 | 单元测试失败 | 分析失败原因，汇报到主对话 |
 | 集成测试失败 | 分析失败原因，汇报到主对话 |

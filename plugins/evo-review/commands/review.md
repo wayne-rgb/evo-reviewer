@@ -48,7 +48,7 @@ $ARGUMENTS — 可选：
 
 ### 1b. 按业务流拆 Explore agent 并行
 
-每个 agent 负责 **1 条业务流**（跨读多个模块），prompt 必须包含上方已加载的 flow-tracing.md 的完整内容，加上：
+每个 agent 负责 **1 条业务流**（跨读多个模块），prompt 必须将 flow-tracing.md 的完整内容内联到 agent prompt 中（agent 无法访问插件的 references 文件），加上：
 
 **主要检查（模块交界处 F1-F4）**：
 - F1 消息格式对齐：发送端字段 vs 接收端字段，有无遗漏/类型不匹配
@@ -107,6 +107,7 @@ A-E 发现的**过滤条件**：必须能描述出用户可感知的影响（如
 
 → 主会话输出验证报告，等用户确认合并。
 → 用户确认后：合并 worktree + push + 清理 worktree → 阶段 3。
+→ **合并冲突处理**：如果主分支在 review 期间有新 commit 导致合并冲突，rebase worktree 分支到最新 main，重跑受影响模块的单元测试确认无回归，再合并。
 
 ## 阶段 3：基础设施更新（主会话直接做，不开 subagent）
 
